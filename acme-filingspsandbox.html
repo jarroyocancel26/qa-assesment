@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acme Filings — Practice Return</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F2F3F3;
+    --surface: #FFFFFF;
+    --surface-alt: #D4D4D4;
+    --ink: #333333;
+    --ink-muted: #B3B3B3;
+    --accent: #3498DB;
+    --accent-dark: color-mix(in srgb, #3498DB 82%, black);
+    --accent-contrast: #FFFFFF;
+    --line: #DDDDDD;
+    --focus: #3498DB;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  h1, h2, h3 {
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 0.4em 0;
+  }
+  .app { max-width: 940px; margin: 0 auto; padding: 28px 20px 60px 20px; }
+  header.app-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 2px solid var(--accent); padding-bottom: 14px; margin-bottom: 20px;
+    flex-wrap: wrap; gap: 8px;
+  }
+  header.app-header h1 { font-size: 22px; letter-spacing: 0.2px; }
+  header.app-header .env-tag {
+    font-size: 12px; color: var(--ink-muted); border: 1px solid var(--line);
+    padding: 3px 9px; border-radius: 3px; background: var(--surface);
+  }
+  button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--focus); outline-offset: 2px;
+  }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 18px 20px; margin-bottom: 16px; min-width: 0; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .card p.hint { font-size: 13.5px; color: var(--ink-muted); margin: 0 0 12px 0; }
+
+  .name-grid { display: grid; grid-template-columns: 2fr 0.7fr 1.5fr 1.5fr; gap: 12px; }
+  @media (max-width: 640px) { .name-grid { grid-template-columns: 1fr 1fr; } }
+  .name-field label { display: block; font-size: 12.5px; color: var(--ink-muted); margin-bottom: 4px; }
+  .name-field input {
+    width: 100%; font-family: inherit; font-size: 14px; border: 1px solid var(--line);
+    border-radius: 3px; padding: 7px 9px; background: var(--surface); color: var(--ink);
+  }
+
+  .schedules { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 620px) { .schedules { grid-template-columns: 1fr; } }
+
+  .field-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid #EEF0E9; flex-wrap: wrap; }
+  .field-row:last-child { border-bottom: none; }
+  .field-row label { color: var(--ink-muted); font-size: 13.5px; flex-shrink: 0; }
+  .field-row.total label { color: var(--ink); font-weight: 600; }
+  .total-label-wrap { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+
+  input.amount-input {
+    font-family: inherit; font-size: 14px; border: 1px solid var(--line); border-radius: 3px;
+    padding: 6px 8px; flex: 1 1 auto; min-width: 0; max-width: 190px; text-align: right;
+    background: var(--surface); color: var(--ink); font-variant-numeric: tabular-nums;
+  }
+  select {
+    font-family: inherit; font-size: 14px; border: 1px solid var(--line); border-radius: 3px;
+    padding: 6px 8px; background: var(--surface); color: var(--ink);
+  }
+  .readonly-value {
+    font-variant-numeric: tabular-nums; font-weight: 600; text-align: right;
+    background: var(--surface-alt); padding: 6px 10px; border-radius: 3px;
+    flex: 0 1 auto; min-width: 130px; max-width: 100%;
+    overflow-wrap: anywhere; word-break: break-all; white-space: normal;
+  }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+  @media (max-width: 620px) { .summary-grid { grid-template-columns: 1fr; } }
+
+  .btn {
+    font-family: inherit; font-size: 14px; font-weight: 600; background: var(--accent);
+    color: var(--accent-contrast); border: none; border-radius: 3px; padding: 9px 16px; cursor: pointer;
+  }
+  .btn:hover { background: var(--accent-dark); }
+  .btn.secondary { background: var(--surface); color: var(--accent-dark); border: 1px solid var(--accent); }
+  .btn.secondary:hover { background: var(--surface-alt); }
+  .actions-row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+  pre.code-output {
+    background: var(--ink); color: #E9EFE4; padding: 14px; border-radius: 4px; font-size: 12.5px;
+    overflow-x: auto; min-height: 40px; white-space: pre-wrap; word-break: break-word;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace !important;
+  }
+  .import-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .import-note { font-size: 13.5px; color: var(--ink-muted); min-height: 20px; }
+  .import-note.visible { color: var(--accent-dark); font-weight: 600; }
+
+  .info-btn {
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink-muted);
+    border-radius: 50%; width: 18px; height: 18px; font-size: 11px; line-height: 1;
+    cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  }
+  .info-btn:hover { background: var(--surface-alt); }
+  .tooltip-bubble {
+    display: none; position: absolute; max-width: 260px; background: var(--ink); color: #E9EFE4;
+    font-size: 12.5px; padding: 8px 10px; border-radius: 4px; z-index: 50; line-height: 1.4;
+  }
+
+  .expected-panel {
+    display: none; background: var(--surface-alt); border: 1px solid var(--line); border-radius: 4px;
+    padding: 14px 16px; margin-top: 12px; font-size: 13.5px;
+  }
+  .expected-panel.visible { display: block; }
+  .expected-panel ul { margin: 6px 0 0 0; padding-left: 20px; }
+  .expected-panel li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <h1>Acme Filings — Practice Return</h1>
+    <span class="env-tag">Practice Environment</span>
+  </header>
+
+  <!-- ===================== TAB 1: FILING FORM ===================== -->
+  <section id="filing-form">
+
+    <div class="card">
+      <h2>Filer</h2>
+      <div class="name-grid">
+        <div class="name-field">
+          <label for="filer-first">First name</label>
+          <input type="text" id="filer-first" data-testid="filer-first-name" class="name-input-strict" value="Juan">
+        </div>
+        <div class="name-field">
+          <label for="filer-initial">Initial</label>
+          <input type="text" id="filer-initial" data-testid="filer-middle-initial" maxlength="3" value="A">
+        </div>
+        <div class="name-field">
+          <label for="filer-paternal">Last name (paternal)</label>
+          <input type="text" id="filer-paternal" data-testid="filer-last-paternal" class="name-input-strict" value="Rivera">
+        </div>
+        <div class="name-field">
+          <label for="filer-maternal">Last name (maternal)</label>
+          <input type="text" id="filer-maternal" data-testid="filer-last-maternal" class="name-input-strict" value="Colon">
+        </div>
+      </div>
+    </div>
+
+    <div class="schedules">
+      <div class="card">
+        <h2>
+          <span class="total-label-wrap">Schedule A</span>
+        </h2>
+        <div class="field-row">
+          <label for="sched-a-1">Line A1</label>
+          <input type="text" inputmode="decimal" class="amount-input" id="sched-a-1" data-testid="schedule-a-line1" value="250.00">
+        </div>
+        <div class="field-row">
+          <label for="sched-a-2">Line A2</label>
+          <input type="text" inputmode="decimal" class="amount-input" id="sched-a-2" data-testid="schedule-a-line2" value="0.00">
+        </div>
+        <div class="field-row total">
+          <span class="total-label-wrap">
+            <label>Schedule A total</label>
+            <button type="button" class="info-btn" data-tip="Total must be equal to the sum of line A1 and A2.">i</button>
+          </span>
+          <span class="readonly-value" data-testid="schedule-a-total" id="schedule-a-total">$250.00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Schedule B</h2>
+        <div class="field-row">
+          <label for="sched-b-1">Line B1</label>
+          <input type="text" inputmode="decimal" class="amount-input" id="sched-b-1" data-testid="schedule-b-line1" value="400.00">
+        </div>
+        <div class="field-row">
+          <label for="sched-b-2">Line B2</label>
+          <input type="text" inputmode="decimal" class="amount-input" id="sched-b-2" data-testid="schedule-b-line2" value="0.00">
+        </div>
+        <div class="field-row total">
+          <span class="total-label-wrap">
+            <label>Schedule B total</label>
+            <button type="button" class="info-btn" data-tip="Total must be equal to the sum of line B1 and B2.">i</button>
+          </span>
+          <span class="readonly-value" data-testid="schedule-b-total" id="schedule-b-total">$400.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="schedules" id="extra-schedules"><!-- filled by JS to keep markup short --></div>
+
+    <div class="card">
+      <h2>Return Summary</h2>
+      <div class="summary-grid">
+        <div class="field-row">
+          <label>Line 10</label>
+          <span class="readonly-value" data-testid="line-10" id="line-10">$0.00</span>
+        </div>
+        <div class="field-row">
+          <label>Line 11</label>
+          <span class="readonly-value" data-testid="line-11" id="line-11">$0.00</span>
+        </div>
+        <div class="field-row">
+          <label for="filing-mode">Filing mode</label>
+          <select id="filing-mode" data-testid="filing-mode">
+            <option value="standard" selected>Standard</option>
+            <option value="specialist">Specialist</option>
+            <option value="trial">Trial</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label>Discount</label>
+          <span class="readonly-value" data-testid="discount" id="discount">$0.00</span>
+        </div>
+        <div class="field-row">
+          <label>Filing convenience fee</label>
+          <span class="readonly-value" data-testid="convenience-fee" id="convenience-fee">$0.00</span>
+        </div>
+        <div class="field-row total">
+          <label>Total due</label>
+          <span class="readonly-value" data-testid="total-due" id="total-due">$0.00</span>
+        </div>
+      </div>
+      <div class="actions-row">
+        <button class="btn" data-testid="recalculate-btn" id="recalculate-btn">Recalculate</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Tax Due &amp; Overpayment</h2>
+      <div class="field-row">
+        <label for="payments">Payments &amp; withholding</label>
+        <input type="text" inputmode="decimal" class="amount-input" id="payments" data-testid="payments" value="300.00">
+      </div>
+      <div class="field-row total">
+        <label>Tax due</label>
+        <span class="readonly-value" data-testid="tax-due" id="tax-due">$0.00</span>
+      </div>
+      <div class="field-row total">
+        <label>Overpayment</label>
+        <span class="readonly-value" data-testid="overpayment" id="overpayment">$0.00</span>
+      </div>
+      <p class="hint" style="margin-top:10px; margin-bottom:0;">Updates when you press Recalculate above.</p>
+    </div>
+
+    <div class="card">
+      <h2>Export</h2>
+      <p class="hint">Generate a submission file for this return.</p>
+      <div class="actions-row">
+        <button class="btn secondary" data-testid="export-btn" id="export-btn">Generate XML export</button>
+        <button class="btn secondary" data-testid="expected-behavior-btn" id="expected-behavior-btn">View expected export behavior</button>
+      </div>
+      <div class="expected-panel" id="expected-behavior-panel" data-testid="expected-behavior-panel">
+        <strong>Expected export behavior</strong>
+        <ul>
+          <li>Every schedule total in the export must match the value shown on its card, to the cent.</li>
+          <li>No amount should appear negative in the export unless the same amount is shown as negative on screen.</li>
+          <li>A line with a nonzero value on screen should never export as zero.</li>
+          <li>A return should not show a nonzero Tax Due and a nonzero Overpayment at the same time.</li>
+        </ul>
+      </div>
+      <pre class="code-output" data-testid="export-output" id="export-output"></pre>
+    </div>
+
+    <div class="card">
+      <h2>Import Clients</h2>
+      <p class="hint">A batch of 20 client records was found in the uploaded file. 12 already exist in Acme Filings; 8 are new.</p>
+      <div class="import-buttons">
+        <button class="btn secondary" data-testid="import-update-all" id="import-update-all">Update all</button>
+        <button class="btn secondary" data-testid="import-add-all" id="import-add-all">Add all</button>
+        <button class="btn secondary" data-testid="import-ignore-all" id="import-ignore-all">Ignore all</button>
+      </div>
+      <p class="import-note" id="import-confirmation" data-testid="import-confirmation"></p>
+    </div>
+
+  </section>
+
+</div>
+
+<div class="tooltip-bubble" id="global-tooltip" role="tooltip"></div>
+
+<script>
+  // ---- Build Schedules J-N (identical structure, on purpose) ----
+  var extraSchedules = ['J', 'K', 'L', 'M', 'N'];
+  var extraContainer = document.getElementById('extra-schedules');
+  extraSchedules.forEach(function (letter) {
+    var lower = letter.toLowerCase();
+    var card = document.createElement('div');
+    card.className = 'card';
+    var line1Class = (letter === 'J') ? 'amount-input no-cap' : 'amount-input';
+    card.innerHTML =
+      '<h2>Schedule ' + letter + '</h2>' +
+      '<div class="field-row">' +
+        '<label for="sched-' + lower + '-1">Line ' + letter + '1</label>' +
+        '<input type="text" inputmode="decimal" class="' + line1Class + '" id="sched-' + lower + '-1" data-testid="schedule-' + lower + '-line1" value="120.00">' +
+      '</div>' +
+      '<div class="field-row">' +
+        '<label for="sched-' + lower + '-2">Line ' + letter + '2</label>' +
+        '<input type="text" inputmode="decimal" class="amount-input" id="sched-' + lower + '-2" data-testid="schedule-' + lower + '-line2" value="30.00">' +
+      '</div>' +
+      '<div class="field-row total">' +
+        '<span class="total-label-wrap">' +
+          '<label>Schedule ' + letter + ' total</label>' +
+          '<button type="button" class="info-btn" data-tip="Total must be equal to the sum of line ' + letter + '1 and ' + letter + '2.">i</button>' +
+        '</span>' +
+        '<span class="readonly-value" data-testid="schedule-' + lower + '-total" id="schedule-' + lower + '-total">$150.00</span>' +
+      '</div>';
+    extraContainer.appendChild(card);
+  });
+
+  // ---- Tooltips (event delegation, works for dynamically built schedules too) ----
+  document.addEventListener('click', function (e) {
+    if (e.target.classList && e.target.classList.contains('info-btn')) {
+      var tip = document.getElementById('global-tooltip');
+      var already = tip.style.display === 'block' && tip.dataset.for === e.target.dataset.tip;
+      if (already) { tip.style.display = 'none'; return; }
+      tip.textContent = e.target.dataset.tip;
+      tip.dataset.for = e.target.dataset.tip;
+      var rect = e.target.getBoundingClientRect();
+      tip.style.left = (rect.left + window.scrollX) + 'px';
+      tip.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+      tip.style.display = 'block';
+    } else {
+      document.getElementById('global-tooltip').style.display = 'none';
+    }
+  });
+
+  // ---- Amount input regime: digits + one decimal, max 2 decimals, no -, +, e, live cap + live comma formatting ----
+  var MAX_AMOUNT_STR = '999999999999999.99'; // largest value with 15 integer digits + 2 decimals
+
+  function exceedsMax(rawDigitsAndDot) {
+    var parts = rawDigitsAndDot.split('.');
+    var intPart = (parts[0] || '').replace(/^0+(?=\d)/, '') || '0';
+    var decPart = (parts[1] || '').padEnd(2, '0').slice(0, 2);
+    var maxParts = MAX_AMOUNT_STR.split('.');
+    if (intPart.length !== maxParts[0].length) return intPart.length > maxParts[0].length;
+    if (intPart !== maxParts[0]) return intPart > maxParts[0];
+    return decPart > maxParts[1];
+  }
+  function groupWithCommas(intStr) {
+    return intStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function countDigitsBefore(str, index) {
+    var n = 0;
+    for (var i = 0; i < index && i < str.length; i++) if (/\d/.test(str[i])) n++;
+    return n;
+  }
+  function positionAfterNDigits(str, n) {
+    if (n <= 0) return 0;
+    var count = 0;
+    for (var i = 0; i < str.length; i++) {
+      if (/\d/.test(str[i])) { count++; if (count === n) return i + 1; }
+    }
+    return str.length;
+  }
+
+  document.addEventListener('input', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('amount-input')) return;
+    var el = e.target;
+    var digitsBeforeCursor = countDigitsBefore(el.value, el.selectionStart);
+
+    var raw = el.value.replace(/[^\d.]/g, '');
+    var parts = raw.split('.');
+    if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
+    parts = raw.split('.');
+    if (parts[1] && parts[1].length > 2) raw = parts[0] + '.' + parts[1].slice(0, 2);
+
+    if (!el.classList.contains('no-cap') && exceedsMax(raw)) raw = MAX_AMOUNT_STR; // only engages once truly over the limit
+
+    parts = raw.split('.');
+    var newValue = groupWithCommas(parts[0] || '');
+    if (raw.indexOf('.') !== -1) newValue += '.' + (parts[1] || '');
+
+    el.value = newValue;
+    var newPos = positionAfterNDigits(newValue, digitsBeforeCursor);
+    el.setSelectionRange(newPos, newPos);
+
+    updateLiveTotals();
+  });
+
+  // Highlights the full amount for immediate overwrite
+  document.addEventListener('focus', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('amount-input')) return;
+    e.target.select();
+  }, true);
+
+  document.addEventListener('blur', function (e) {
+    if (!e.target.classList || !e.target.classList.contains('amount-input')) return;
+    var raw = e.target.value.replace(/,/g, '');
+    var n = parseFloat(raw);
+    if (isNaN(n)) n = 0;
+    if (!e.target.classList.contains('no-cap') && exceedsMax(raw)) n = parseFloat(MAX_AMOUNT_STR);
+    e.target.value = formatPlainNumber(n);
+  }, true);
+
+  // ---- Name field filtering (letters only, except Initial) ----
+  document.addEventListener('input', function (e) {
+    if (e.target.classList && e.target.classList.contains('name-input-strict')) {
+      e.target.value = e.target.value.replace(/[^\p{L}\s'-]/gu, '');
+    }
+    // filer-initial intentionally has no filtering
+  });
+
+  // ---- Helpers ----
+  function formatPlainNumber(n) {
+    var neg = n < 0;
+    var parts = Math.abs(n).toFixed(2).split('.');
+    parts[0] = groupWithCommas(parts[0]);
+    return (neg ? '-' : '') + parts[0] + '.' + parts[1];
+  }
+  function fmt(n) {
+    return (n < 0 ? '-$' : '$') + formatPlainNumber(Math.abs(n));
+  }
+  function amt(id) {
+    var el = document.getElementById(id);
+    if (!el) return 0;
+    var n = parseFloat(String(el.value).replace(/,/g, ''));
+    return isNaN(n) ? 0 : n;
+  }
+  function parseDisplayed(id) {
+    var t = document.getElementById(id).textContent.replace(/[$,]/g, '');
+    var n = parseFloat(t);
+    return isNaN(n) ? 0 : n;
+  }
+
+  // ---- Live schedule totals ----
+  function scheduleBTotal() {
+    var b1 = amt('sched-b-1');
+    var b2 = amt('sched-b-2');
+    var mode = document.getElementById('filing-mode').value;
+    if (mode === 'trial') return (b1 * 2) + b2; // duplicates B1 when Trial is selected
+    return b1 + b2;
+  }
+
+  function updateLiveTotals() {
+    document.getElementById('schedule-a-total').textContent = fmt(amt('sched-a-1') + amt('sched-a-2'));
+    document.getElementById('schedule-b-total').textContent = fmt(scheduleBTotal());
+    extraSchedules.forEach(function (letter) {
+      var lower = letter.toLowerCase();
+      var total = amt('sched-' + lower + '-1') + amt('sched-' + lower + '-2');
+      document.getElementById('schedule-' + lower + '-total').textContent = fmt(total);
+    });
+  }
+
+  document.getElementById('filing-mode').addEventListener('change', updateLiveTotals);
+
+  // ---- Recalculate ----
+  var lastFee = 0;
+
+  document.getElementById('recalculate-btn').addEventListener('click', function () {
+    updateLiveTotals();
+    var mode = document.getElementById('filing-mode').value;
+    var aTotal = amt('sched-a-1') + amt('sched-a-2');
+
+    var line10 = aTotal;
+    var line11 = aTotal; // mirrors Schedule A instead of Schedule B
+    var discount = (mode !== 'specialist') ? 20.00 : 0.00; // applies to Standard AND Trial
+    var fee = 0.1 + 0.2; // floating point artifact preserved for export
+    lastFee = fee;
+    var totalDue = line10 + line11 - discount + fee;
+
+    document.getElementById('line-10').textContent = fmt(line10);
+    document.getElementById('line-11').textContent = fmt(line11);
+    document.getElementById('discount').textContent = fmt(discount);
+    document.getElementById('convenience-fee').textContent = fmt(fee);
+    document.getElementById('total-due').textContent = fmt(totalDue);
+
+    var payments = amt('payments');
+    var diff = payments - totalDue;
+    var taxDue, overpayment;
+    if (diff >= 0) {
+      taxDue = 0;
+      overpayment = diff;
+    } else {
+      taxDue = -diff;
+      overpayment = diff; // stays negative instead of clamping to zero
+    }
+    document.getElementById('tax-due').textContent = fmt(taxDue);
+    document.getElementById('overpayment').textContent = fmt(overpayment);
+  });
+
+  // ---- Expected export behavior panel ----
+  document.getElementById('expected-behavior-btn').addEventListener('click', function () {
+    document.getElementById('expected-behavior-panel').classList.toggle('visible');
+  });
+
+  // ---- Export (XML) ----
+  function xmlEscape(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  document.getElementById('export-btn').addEventListener('click', function () {
+    var kActual = amt('sched-k-1') + amt('sched-k-2');
+    var mActual = amt('sched-m-1') + amt('sched-m-2');
+    var overpaymentDisplayed = parseDisplayed('overpayment');
+
+    var xml = [];
+    xml.push('<?xml version="1.0" encoding="UTF-8"?>');
+    xml.push('<Return>');
+    xml.push('  <Filer>');
+    xml.push('    <FirstName>' + xmlEscape(document.getElementById('filer-first').value) + '</FirstName>');
+    xml.push('    <MiddleInitial>' + xmlEscape(document.getElementById('filer-initial').value) + '</MiddleInitial>');
+    xml.push('    <LastNamePaternal>' + xmlEscape(document.getElementById('filer-paternal').value) + '</LastNamePaternal>');
+    xml.push('    <LastNameMaternal>' + xmlEscape(document.getElementById('filer-maternal').value) + '</LastNameMaternal>');
+    xml.push('  </Filer>');
+    xml.push('  <Schedules>');
+    xml.push('    <Schedule id="A"><Total>' + (amt('sched-a-1') + amt('sched-a-2')).toFixed(2) + '</Total></Schedule>');
+    xml.push('    <Schedule id="B"><Total>' + scheduleBTotal().toFixed(2) + '</Total></Schedule>');
+    xml.push('    <Schedule id="J"><Total>' + (amt('sched-j-1') + amt('sched-j-2')).toFixed(2) + '</Total></Schedule>');
+    xml.push('    <Schedule id="K"><Total>' + (0).toFixed(2) + '</Total></Schedule>'); // exports as 0.00 regardless of actual value
+    xml.push('    <Schedule id="L"><Total>' + (amt('sched-l-1') + amt('sched-l-2')).toFixed(2) + '</Total></Schedule>');
+    xml.push('    <Schedule id="M"><Total>' + (-mActual).toFixed(2) + '</Total></Schedule>'); // sign-flipped on export
+    xml.push('    <Schedule id="N"><Total>' + (amt('sched-n-1') + amt('sched-n-2')).toFixed(2) + '</Total></Schedule>');
+    xml.push('  </Schedules>');
+    xml.push('  <Summary>');
+    xml.push('    <Line10>' + parseDisplayed('line-10').toFixed(2) + '</Line10>');
+    xml.push('    <Line11>' + parseDisplayed('line-11').toFixed(2) + '</Line11>');
+    xml.push('    <Discount>' + parseDisplayed('discount').toFixed(2) + '</Discount>');
+    xml.push('    <ConvenienceFee>' + lastFee + '</ConvenienceFee>');
+    xml.push('    <TotalDue>' + parseDisplayed('total-due').toFixed(2) + '</TotalDue>');
+    xml.push('    <Payments>' + amt('payments').toFixed(2) + '</Payments>');
+    xml.push('    <TaxDue>' + parseDisplayed('tax-due').toFixed(2) + '</TaxDue>');
+    xml.push('    <Overpayment>' + Math.abs(overpaymentDisplayed).toFixed(2) + '</Overpayment>'); // always positive on export
+    xml.push('  </Summary>');
+    xml.push('</Return>');
+
+    document.getElementById('export-output').textContent = xml.join('\n');
+  });
+
+  // ---- Import Clients ----
+  document.getElementById('import-update-all').addEventListener('click', function () {
+    var note = document.getElementById('import-confirmation');
+    note.textContent = '12 existing client records will be updated.';
+    note.classList.add('visible');
+  });
+  document.getElementById('import-add-all').addEventListener('click', function () {
+    var note = document.getElementById('import-confirmation');
+    note.textContent = '8 new client records will be added.';
+    note.classList.add('visible');
+  });
+  document.getElementById('import-ignore-all').addEventListener('click', function () {
+    // intentionally no confirmation shown
+  });
+</script>
+
+</body>
+</html>
